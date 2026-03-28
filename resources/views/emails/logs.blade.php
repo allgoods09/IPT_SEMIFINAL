@@ -50,6 +50,7 @@ td {
     padding: 10px;
     border-bottom: 1px solid #e2e8f0;
     vertical-align: top;
+    text-align: center;
 }
 
 tr:nth-child(even) { background: #f8fafc; }
@@ -57,6 +58,7 @@ tr:nth-child(even) { background: #f8fafc; }
 .message {
     max-width: 250px;
     word-wrap: break-word;
+    text-align: left;
 }
 
 .summary {
@@ -101,12 +103,12 @@ tr:nth-child(even) { background: #f8fafc; }
 <tbody>
 @forelse ($data as $log)
 <tr>
-    <td>{{ $log->created_at->format('M d, Y H:i') }}</td>
+    <td>{{ $log->created_at->format('M d, Y H:i') ?? 'N/A' }}</td>
     <td>{{ $log->user?->name ?? 'System' }}</td>
-    <td>{{ $log->action }}</td>
-    <td>{{ $log->entity_type }}</td>
-    <td>{{ $log->entity_id }}</td>
-    <td class="message">{{ $log->description }}</td>
+    <td>{{ $log->action ?? 'N/A' }}</td>
+    <td>{{ $log->entity_type ?? 'N/A' }}</td>
+    <td>{{ $log->entity_id ?? 'N/A' }}</td>
+    <td class="message">{{ $log->description ?? 'N/A' }}</td>
 </tr>
 @empty
 <tr>

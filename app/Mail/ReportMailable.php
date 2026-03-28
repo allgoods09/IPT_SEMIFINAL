@@ -2,33 +2,34 @@
 
 namespace App\Mail;
 
+use App\Models\Category;
+use App\Models\Log;
+use App\Models\Product;
+use App\Models\Sale;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Bus\Queueable;
+use Illuminate\Support\Carbon;
 use Illuminate\Mail\Mailable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Queue\SerializesModels;
 
-class ReportMailable extends Mailable
+class ReportMailable extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public $pdfContent;
     public $subject;
     public $type;
-    public $data;
     public $month;
 
-
-    public function __construct($pdfContent, $subject, $type = 'report', $data = [], $month = null)
+    public function __construct($subject, $type, $month)
     {
-        $this->pdfContent = $pdfContent;
         $this->subject = $subject;
         $this->type = $type;
-        $this->data = $data;
         $this->month = $month;
     }
-
 
     public function envelope(): Envelope
     {
@@ -37,24 +38,66 @@ class ReportMailable extends Mailable
         );
     }
 
+    /**
+     * 🔥 CENTRALIZED DATA FETCH (VERY IMPORTANT)
+     */
+    private function getData()
+    {
+        $monthStart = Carbon::parse($this->month)->startOfMonth();
+        $monthEnd = Carbon::parse($this->month)->endOfMonth();
+
+        return match ($this->type) {
+            'sales' => Sale::with('product')
+                ->whereBetween('sale_date', [$monthStart, $monthEnd])
+                ->orderBy('sale_date', 'desc')
+                ->get(),
+
+            'products' => Product::with('category')
+                ->where('status', 'active')
+                ->orderBy('stock_quantity')
+                ->get(),
+
+            'categories' => Category::withCount('products')
+                ->orderBy('name')
+                ->get(),
+
+            'logs' => Log::whereBetween('created_at', [$monthStart, $monthEnd])
+                ->orderBy('created_at', 'desc')
+                ->get(),
+
+            default => collect(),
+        };
+    }
+
     public function content(): Content
     {
+        $data = $this->getData();
+
         return new Content(
-           view: "emails.{$this->type}",
+            view: "emails.{$this->type}",
             with: [
-                'data' => $this->data,
+                'data' => $data,
                 'month' => $this->month,
                 'type' => $this->type,
             ],
-
         );
     }
 
     public function attachments(): array
     {
+        $data = $this->getData();
+
+        $pdf = Pdf::loadView("reports.{$this->type}-pdf", [
+            'data' => $data,
+            'month' => $this->month,
+            'type' => $this->type,
+        ]);
+
         return [
-            Attachment::fromData(fn () => $this->pdfContent, $this->type . '_report.pdf')
-                ->withMime('application/pdf'),
+            Attachment::fromData(
+                fn () => $pdf->output(),
+                $this->type . '_report.pdf'
+            )->withMime('application/pdf'),
         ];
     }
 }

@@ -50,6 +50,7 @@ th {
 td {
     padding: 10px;
     border-bottom: 1px solid #e2e8f0;
+    text-align: center;
 }
 
 tr:nth-child(even) { background: #f8fafc; }
@@ -103,10 +104,10 @@ tr:nth-child(even) { background: #f8fafc; }
 <tbody>
 @forelse ($data as $product)
 <tr @if($product->stock_quantity <= $product->reorder_level) class="low-stock" @endif>
-    <td>{{ $product->name }}</td>
+    <td>{{ $product->name ?? 'N/A' }}</td>
     <td>{{ $product->category->name ?? 'Uncategorized' }}</td>
-    <td class="amount">{{ $product->stock_quantity }}</td>
-    <td class="amount">{{ $product->reorder_level }}</td>
+    <td class="amount">{{ $product->stock_quantity ?? 'N/A' }}</td>
+    <td class="amount">{{ $product->reorder_level ?? 'N/A' }}</td>
     <td><center>{{ $product->stock_quantity <= $product->reorder_level ? 'Low Stock' : 'OK' }}</center></td>
 </tr>
 @empty

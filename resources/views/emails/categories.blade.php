@@ -49,6 +49,7 @@ th {
 td {
     padding: 10px;
     border-bottom: 1px solid #e2e8f0;
+    text-align: center;
 }
 
 tr:nth-child(even) { background: #f8fafc; }
@@ -97,8 +98,8 @@ tr:nth-child(even) { background: #f8fafc; }
 <tbody>
 @forelse ($data as $category)
 <tr>
-    <td>{{ $category->name }}</td>
-    <td class="amount">{{ $category->products_count }}</td>
+    <td>{{ $category->name ??  'N/A'}}</td>
+    <td class="amount">{{ $category->products_count ?? 'N/A'}}</td>
     <td>{{ $category->status ?? 'N/A' }}</td>
 </tr>
 @empty

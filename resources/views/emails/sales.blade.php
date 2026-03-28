@@ -65,6 +65,7 @@
 
         td {
             border-bottom: 1px solid #e2e8f0;
+            text-align: center;
         }
 
         tr:nth-child(even) {
@@ -72,7 +73,7 @@
         }
 
         td.amount {
-            text-align: right;
+            text-align: center;
             font-weight: 600;
             color: #091a2a;
         }
@@ -134,7 +135,7 @@
                 <tr>
                     <td>{{ optional($sale->sale_date)->format('M d, Y H:i') ?? 'N/A' }}</td>
                     <td>{{ $sale->product->name ?? 'N/A' }}</td>
-                    <td>{{ $sale->quantity }}</td>
+                    <td>{{ $sale->quantity ?? 'N/A' }}</td>
                     <td class="amount">₱{{ number_format($sale->total_amount ?? 0, 2) }}</td>
                 </tr>
             @empty
